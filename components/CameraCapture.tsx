@@ -16,15 +16,12 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture }) => {
     setError(null);
     try {
       let stream: MediaStream | null = null;
-      
       try {
-        // Attempt 1: Try to get the back/environment camera (phones/tablets)
         stream = await navigator.mediaDevices.getUserMedia({ 
           video: { facingMode: 'environment' } 
         });
       } catch (err) {
-        // Attempt 2: Fallback to any available video device (laptops/webcams)
-        console.warn("Environment camera not found, falling back to default video device.");
+        console.warn("Environment camera not found, falling back to default.");
         stream = await navigator.mediaDevices.getUserMedia({ 
           video: true 
         });
@@ -37,13 +34,8 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture }) => {
     } catch (err: any) {
       console.error("Error accessing camera:", err);
       let errorMessage = "No se pudo acceder a la cámara.";
-      if (err.name === 'NotAllowedError') {
-        errorMessage = "Permiso de cámara denegado. Por favor, permita el acceso en su navegador.";
-      } else if (err.name === 'NotFoundError') {
-        errorMessage = "No se encontró ningún dispositivo de cámara.";
-      } else if (err.name === 'NotReadableError') {
-        errorMessage = "La cámara está siendo usada por otra aplicación.";
-      }
+      if (err.name === 'NotAllowedError') errorMessage = "Permiso denegado.";
+      else if (err.name === 'NotFoundError') errorMessage = "Dispositivo no encontrado.";
       setError(errorMessage);
     }
   }, []);
@@ -62,10 +54,8 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture }) => {
       const video = videoRef.current;
       const canvas = canvasRef.current;
       
-      // Check if video has actual dimensions
       if (video.videoWidth === 0 || video.videoHeight === 0) return;
 
-      // Set canvas dimensions to match video
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
       
@@ -82,18 +72,16 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture }) => {
 
   const retakePhoto = () => {
     setCapturedImage(null);
-    onCapture(''); // Clear parent state
+    onCapture('');
     startCamera();
   };
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       stopCamera();
     };
   }, [stopCamera]);
 
-  // Start camera on mount if not captured
   useEffect(() => {
     if (!capturedImage) {
       startCamera();
@@ -102,17 +90,17 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture }) => {
 
   return (
     <div className="w-full space-y-4">
-      <div className="relative w-full bg-slate-900 rounded-lg overflow-hidden aspect-video shadow-inner flex items-center justify-center group">
+      <div className="relative w-full bg-dark-900 rounded-xl overflow-hidden aspect-video shadow-inner flex items-center justify-center group border border-gray-800">
         {/* Error State */}
         {error && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-4 text-center z-20 bg-slate-900">
-            <p className="text-red-400 mb-2 font-medium">⚠️ Error de Cámara</p>
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-4 text-center z-20 bg-dark-900">
+            <p className="text-secondary-400 mb-2 font-medium">⚠️ Error de Cámara</p>
             <p className="text-sm text-gray-400 mb-4">{error}</p>
             <button 
               onClick={() => { setError(null); startCamera(); }}
-              className="px-4 py-2 bg-slate-700 rounded-md hover:bg-slate-600 transition-colors text-sm"
+              className="px-4 py-2 bg-gray-700 rounded-md hover:bg-gray-600 transition-colors text-sm"
             >
-              Reintentar acceso
+              Reintentar
             </button>
           </div>
         )}
@@ -129,14 +117,14 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture }) => {
           />
         )}
 
-        {/* Loading State */}
+        {/* Loading */}
         {!isStreaming && !capturedImage && !error && (
            <div className="absolute inset-0 flex items-center justify-center text-gray-500">
-             <div className="w-8 h-8 border-2 border-gray-600 border-t-velas-400 rounded-full animate-spin"></div>
+             <div className="w-8 h-8 border-2 border-gray-600 border-t-primary-400 rounded-full animate-spin"></div>
            </div>
         )}
 
-        {/* Captured Image Preview */}
+        {/* Preview */}
         {capturedImage && (
           <img 
             src={capturedImage} 
@@ -145,16 +133,15 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture }) => {
           />
         )}
         
-        {/* Canvas (Hidden) */}
         <canvas ref={canvasRef} className="hidden" />
 
-        {/* Overlay Controls */}
+        {/* Controls */}
         <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4 z-10">
           {!capturedImage && isStreaming && (
             <button
               type="button"
               onClick={capturePhoto}
-              className="bg-white text-velas-700 p-4 rounded-full shadow-lg hover:bg-gray-100 active:scale-95 transition-all focus:outline-none focus:ring-4 focus:ring-velas-300/50"
+              className="bg-primary-400 text-dark-900 p-4 rounded-full shadow-lg shadow-primary-400/30 hover:bg-primary-300 hover:scale-105 active:scale-95 transition-all focus:outline-none focus:ring-4 focus:ring-primary-400/50"
               aria-label="Tomar foto"
             >
               <Camera size={24} />
@@ -165,7 +152,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture }) => {
             <button
               type="button"
               onClick={retakePhoto}
-              className="bg-slate-800/80 backdrop-blur-sm text-white px-6 py-2 rounded-full shadow-lg hover:bg-slate-700 transition-all flex items-center gap-2"
+              className="bg-dark-900/80 backdrop-blur-sm text-white px-6 py-2 rounded-full shadow-lg hover:bg-black transition-all flex items-center gap-2 border border-white/10"
             >
               <RefreshCcw size={18} />
               Retomar
@@ -173,10 +160,10 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ onCapture }) => {
           )}
         </div>
 
-        {/* Success Indicator */}
+        {/* Indicator */}
         {capturedImage && (
-          <div className="absolute top-4 right-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 shadow-md">
-            <CheckCircle size={14} />
+          <div className="absolute top-4 right-4 bg-primary-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-md">
+            <CheckCircle size={12} />
             Capturado
           </div>
         )}

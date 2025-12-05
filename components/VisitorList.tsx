@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Visit, VisitStatus } from '../types';
 import { Clock, LogOut, AlertTriangle, Search, Building2, User, Hammer, ChevronDown, ChevronUp, CreditCard, CheckCircle2, Loader2, X } from 'lucide-react';
@@ -15,24 +14,20 @@ export const VisitorList: React.FC<VisitorListProps> = ({ visits, onCheckout, vi
   const [expandedTools, setExpandedTools] = useState<Set<string>>(new Set());
   const [expandedId, setExpandedId] = useState<Set<string>>(new Set());
   
-  // State for Checkout Modal
   const [visitToCheckout, setVisitToCheckout] = useState<Visit | null>(null);
   const [isCheckingOut, setIsCheckingOut] = useState(false);
 
-  // Update time every minute to refresh alerts
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(Date.now());
-    }, 60000); // 1 minute
+    }, 60000);
     return () => clearInterval(interval);
   }, []);
 
-  // Filter visits based on mode
   const relevantVisits = viewMode === 'dashboard'
     ? visits.filter(v => v.status === VisitStatus.ACTIVE)
     : visits.filter(v => v.status === VisitStatus.COMPLETED).sort((a, b) => (b.checkOutTime || 0) - (a.checkOutTime || 0));
   
-  // Search filter
   const filteredVisits = relevantVisits.filter(v => 
     v.visitorName.toLowerCase().includes(filter.toLowerCase()) ||
     v.badgeId.toLowerCase().includes(filter.toLowerCase()) ||
@@ -95,7 +90,7 @@ export const VisitorList: React.FC<VisitorListProps> = ({ visits, onCheckout, vi
     setIsCheckingOut(true);
     try {
       await onCheckout(visitToCheckout);
-      setVisitToCheckout(null); // Close modal on success
+      setVisitToCheckout(null);
     } catch (e) {
       console.error("Checkout failed in UI", e);
     } finally {
@@ -109,7 +104,6 @@ export const VisitorList: React.FC<VisitorListProps> = ({ visits, onCheckout, vi
     }
   };
 
-  // Stats calculation
   const activeCount = visits.filter(v => v.status === VisitStatus.ACTIVE).length;
   const overdueCount = visits.filter(v => v.status === VisitStatus.ACTIVE && isOverdue(v)).length;
   const completedTodayCount = visits.filter(v => {
@@ -125,21 +119,19 @@ export const VisitorList: React.FC<VisitorListProps> = ({ visits, onCheckout, vi
       {/* Checkout Confirmation Modal */}
       {visitToCheckout && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
-          {/* Backdrop */}
           <div 
-            className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+            className="absolute inset-0 bg-dark-900/80 backdrop-blur-sm transition-opacity"
             onClick={cancelCheckout}
           ></div>
           
-          {/* Modal Card */}
-          <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform transition-all scale-100">
+          <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform transition-all scale-100 border border-gray-200">
             <div className="p-6">
-              <div className="flex items-center gap-4 mb-4 text-velas-800">
-                <div className="w-12 h-12 rounded-full bg-gold-50 flex items-center justify-center text-gold-600">
+              <div className="flex items-center gap-4 mb-4 text-dark-900">
+                <div className="w-12 h-12 rounded-full bg-secondary-50 flex items-center justify-center text-secondary-400">
                   <LogOut size={24} />
                 </div>
                 <div>
-                  <h3 className="text-lg font-serif font-bold">Confirmar Salida</h3>
+                  <h3 className="text-lg font-bold">Confirmar Salida</h3>
                   <p className="text-sm text-gray-500">¿Desea finalizar esta visita?</p>
                 </div>
               </div>
@@ -150,13 +142,13 @@ export const VisitorList: React.FC<VisitorListProps> = ({ visits, onCheckout, vi
                     <img src={visitToCheckout.photoUrl} alt="" className="w-full h-full object-cover" />
                   </div>
                   <div>
-                    <p className="font-bold text-gray-800">{visitToCheckout.visitorName}</p>
+                    <p className="font-bold text-dark-900">{visitToCheckout.visitorName}</p>
                     <p className="text-xs text-gray-500">{visitToCheckout.visitorCompany}</p>
                   </div>
                 </div>
                 <div className="flex justify-between items-center text-sm border-t border-gray-200 pt-2 mt-2">
                   <span className="text-gray-500">Gafete Asignado:</span>
-                  <span className="font-mono font-medium text-velas-700 bg-white px-2 py-0.5 rounded border border-gray-200">
+                  <span className="font-mono font-bold text-dark-900 bg-white px-2 py-0.5 rounded border border-gray-200">
                     {visitToCheckout.badgeId}
                   </span>
                 </div>
@@ -180,7 +172,7 @@ export const VisitorList: React.FC<VisitorListProps> = ({ visits, onCheckout, vi
                 type="button"
                 onClick={confirmCheckout}
                 disabled={isCheckingOut}
-                className="px-5 py-2 bg-velas-600 text-white rounded-lg hover:bg-velas-700 font-medium shadow-md flex items-center gap-2 disabled:opacity-70"
+                className="px-5 py-2 bg-secondary-400 text-white rounded-lg hover:bg-secondary-500 font-bold shadow-md shadow-secondary-400/20 flex items-center gap-2 disabled:opacity-70"
               >
                 {isCheckingOut ? (
                   <>
@@ -201,34 +193,34 @@ export const VisitorList: React.FC<VisitorListProps> = ({ visits, onCheckout, vi
       {/* Header Stats */}
       {viewMode === 'dashboard' ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-velas-100">
-            <p className="text-sm text-gray-500 font-medium">Visitas Activas</p>
-            <p className="text-3xl font-bold text-velas-700">{activeCount}</p>
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <p className="text-sm text-gray-500 font-medium mb-1">Visitas Activas</p>
+            <p className="text-3xl font-bold text-primary-600">{activeCount}</p>
           </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-velas-100">
-            <p className="text-sm text-gray-500 font-medium">Alertas de Tiempo</p>
-            <p className={`text-3xl font-bold ${overdueCount > 0 ? 'text-red-600' : 'text-gray-800'}`}>
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <p className="text-sm text-gray-500 font-medium mb-1">Alertas de Tiempo</p>
+            <p className={`text-3xl font-bold ${overdueCount > 0 ? 'text-secondary-400' : 'text-dark-900'}`}>
               {overdueCount}
             </p>
           </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-velas-100">
-            <p className="text-sm text-gray-500 font-medium">Registros del Día</p>
-            <p className="text-3xl font-bold text-gray-800">{visits.filter(v => new Date(v.checkInTime).toDateString() === new Date().toDateString()).length}</p>
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <p className="text-sm text-gray-500 font-medium mb-1">Registros del Día</p>
+            <p className="text-3xl font-bold text-dark-900">{visits.filter(v => new Date(v.checkInTime).toDateString() === new Date().toDateString()).length}</p>
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-velas-100">
-            <p className="text-sm text-gray-500 font-medium">Total Histórico</p>
-            <p className="text-3xl font-bold text-slate-700">{totalHistoryCount}</p>
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <p className="text-sm text-gray-500 font-medium mb-1">Total Histórico</p>
+            <p className="text-3xl font-bold text-dark-900">{totalHistoryCount}</p>
           </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-velas-100">
-            <p className="text-sm text-gray-500 font-medium">Finalizados Hoy</p>
-            <p className="text-3xl font-bold text-velas-600">{completedTodayCount}</p>
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+            <p className="text-sm text-gray-500 font-medium mb-1">Finalizados Hoy</p>
+            <p className="text-3xl font-bold text-primary-600">{completedTodayCount}</p>
           </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-velas-100 bg-slate-50">
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 bg-gray-50/50">
             <p className="text-sm text-gray-500 font-medium">Archivo</p>
-            <p className="text-sm text-gray-600 mt-1">Mostrando visitas finalizadas ordenadas por fecha reciente.</p>
+            <p className="text-xs text-gray-400 mt-2">Visitas finalizadas ordenadas por fecha reciente.</p>
           </div>
         </div>
       )}
@@ -239,7 +231,7 @@ export const VisitorList: React.FC<VisitorListProps> = ({ visits, onCheckout, vi
         <input 
           type="text" 
           placeholder="Buscar por nombre, empresa o gafete..." 
-          className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-velas-400 focus:border-transparent shadow-sm"
+          className="w-full pl-12 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-primary-400 focus:border-transparent shadow-sm transition-all"
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
         />
@@ -247,7 +239,7 @@ export const VisitorList: React.FC<VisitorListProps> = ({ visits, onCheckout, vi
 
       {/* Grid List */}
       {filteredVisits.length === 0 ? (
-        <div className="text-center py-12 text-gray-400 bg-white rounded-xl border border-dashed border-gray-300">
+        <div className="text-center py-12 text-gray-400 bg-white rounded-2xl border border-dashed border-gray-200">
           <User size={48} className="mx-auto mb-4 opacity-20" />
           <p>No hay visitas {viewMode === 'dashboard' ? 'activas' : 'en el historial'} que coincidan con la búsqueda.</p>
         </div>
@@ -263,36 +255,33 @@ export const VisitorList: React.FC<VisitorListProps> = ({ visits, onCheckout, vi
             return (
               <div 
                 key={visit.id} 
-                className={`bg-white rounded-xl overflow-hidden shadow-sm border transition-all hover:shadow-md flex flex-col ${
-                  overdue ? 'border-red-300 ring-1 ring-red-100' : viewMode === 'history' ? 'border-gray-200 opacity-95' : 'border-velas-100'
+                className={`bg-white rounded-2xl overflow-hidden shadow-sm border transition-all hover:shadow-lg hover:-translate-y-1 flex flex-col ${
+                  overdue ? 'border-secondary-100 ring-2 ring-secondary-50' : viewMode === 'history' ? 'border-gray-100 opacity-90' : 'border-gray-100'
                 }`}
               >
                 <div className="p-5 flex-1">
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex gap-4">
-                      <div className={`w-16 h-16 rounded-lg overflow-hidden shrink-0 border ${viewMode === 'history' ? 'grayscale filter' : 'border-gray-100'}`}>
+                      <div className={`w-16 h-16 rounded-xl overflow-hidden shrink-0 border ${viewMode === 'history' ? 'grayscale filter border-gray-100' : 'border-gray-100'}`}>
                         <img src={visit.photoUrl} alt={visit.visitorName} className="w-full h-full object-cover" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-lg text-gray-800 leading-tight">{visit.visitorName}</h3>
-                        <div className="flex items-center text-sm text-gray-500 mt-1">
+                        <h3 className="font-bold text-lg text-dark-900 leading-tight">{visit.visitorName}</h3>
+                        <div className="flex items-center text-sm text-gray-500 mt-1 font-medium">
                           <Building2 size={14} className="mr-1" />
                           <span className="truncate max-w-[140px]">{visit.visitorCompany}</span>
                         </div>
-                        <div className="flex flex-wrap gap-2 mt-2">
+                        <div className="flex flex-wrap gap-2 mt-3">
                           {viewMode === 'history' && (
-                             <div className="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs font-medium border border-gray-200">
+                             <div className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-xs font-bold border border-gray-200">
                                {formatDate(visit.checkInTime)}
                              </div>
                           )}
-                          <div className="inline-flex items-center px-2 py-0.5 rounded-full bg-velas-50 text-velas-700 text-xs font-medium border border-velas-100">
+                          <div className="inline-flex items-center px-2 py-0.5 rounded-md bg-cream-100 text-dark-900 text-xs font-bold">
                             Gafete: {visit.badgeId}
                           </div>
-                          <div className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-medium border border-blue-100">
-                             ID: {visit.idDocumentType}
-                          </div>
                           {visit.hasTools && (
-                            <div className="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-medium border border-amber-100">
+                            <div className="inline-flex items-center px-2 py-0.5 rounded-md bg-primary-50 text-primary-600 text-xs font-bold border border-primary-100">
                               <Hammer size={12} className="mr-1" />
                               Equipo
                             </div>
@@ -301,50 +290,49 @@ export const VisitorList: React.FC<VisitorListProps> = ({ visits, onCheckout, vi
                       </div>
                     </div>
                     {overdue && viewMode === 'dashboard' && (
-                      <div className="animate-pulse text-red-500 bg-red-50 p-2 rounded-full" title="Tiempo excedido">
+                      <div className="animate-pulse text-secondary-500 bg-secondary-50 p-2 rounded-full" title="Tiempo excedido">
                         <AlertTriangle size={20} />
                       </div>
                     )}
                     {viewMode === 'history' && (
-                      <div className="text-green-600 bg-green-50 p-2 rounded-full">
+                      <div className="text-gray-400 bg-gray-50 p-2 rounded-full">
                         <CheckCircle2 size={20} />
                       </div>
                     )}
                   </div>
 
-                  <div className="space-y-3 border-t border-gray-100 pt-3">
+                  <div className="space-y-3 border-t border-gray-50 pt-3">
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500 flex items-center gap-1.5">
+                      <span className="text-gray-400 flex items-center gap-1.5 font-medium">
                         <User size={14} /> Anfitrión
                       </span>
-                      <span className="font-medium text-gray-700 text-right">{visit.hostName}</span>
+                      <span className="font-semibold text-dark-900 text-right">{visit.hostName}</span>
                     </div>
                     
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-500 flex items-center gap-1.5">
+                      <span className="text-gray-400 flex items-center gap-1.5 font-medium">
                         <Clock size={14} /> Entrada
                       </span>
-                      <span className="font-medium text-gray-700">{formatTime(visit.checkInTime)}</span>
+                      <span className="font-semibold text-dark-900">{formatTime(visit.checkInTime)}</span>
                     </div>
 
-                    {/* Explicit Check Out Status Block for History */}
                     {viewMode === 'history' && visit.checkOutTime && (
-                      <div className="mt-3 p-3 bg-green-50 border border-green-100 rounded-lg flex justify-between items-center">
-                        <span className="text-green-800 text-xs font-bold uppercase flex items-center gap-1.5">
-                            <LogOut size={14} /> Check Out
+                      <div className="mt-3 p-3 bg-gray-50 border border-gray-100 rounded-lg flex justify-between items-center">
+                        <span className="text-gray-500 text-xs font-bold uppercase flex items-center gap-1.5">
+                            <LogOut size={14} /> Salida
                         </span>
-                        <span className="font-mono font-bold text-green-700 text-sm">
+                        <span className="font-mono font-bold text-dark-900 text-sm">
                             {formatTime(visit.checkOutTime)}
                         </span>
                       </div>
                     )}
 
-                    <div className="bg-gray-50 rounded-lg p-3 mt-2">
-                       <div className="flex justify-between text-xs mb-1">
+                    <div className="bg-gray-50/80 rounded-lg p-3 mt-2 border border-gray-50">
+                       <div className="flex justify-between text-xs mb-1 font-medium">
                           <span className="text-gray-500">
-                            {viewMode === 'history' ? 'Duración total en propiedad' : 'Tiempo transcurrido'}
+                            {viewMode === 'history' ? 'Duración total' : 'Tiempo transcurrido'}
                           </span>
-                          <span className={`${overdue ? 'text-red-600 font-bold' : 'text-gray-700'}`}>
+                          <span className={`${overdue ? 'text-secondary-500 font-bold' : 'text-dark-900'}`}>
                             {viewMode === 'history' 
                               ? getDurationString(actualDuration)
                               : `${getDurationString(timeElapsed)} / ${getDurationString(visit.durationMinutes)}`
@@ -352,9 +340,9 @@ export const VisitorList: React.FC<VisitorListProps> = ({ visits, onCheckout, vi
                           </span>
                        </div>
                        {viewMode === 'dashboard' && (
-                         <div className="w-full bg-gray-200 rounded-full h-1.5">
+                         <div className="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
                             <div 
-                              className={`h-1.5 rounded-full ${overdue ? 'bg-red-500' : 'bg-velas-500'}`} 
+                              className={`h-1.5 rounded-full transition-all duration-1000 ${overdue ? 'bg-secondary-400' : 'bg-primary-400'}`} 
                               style={{ width: `${Math.min(100, (timeElapsed / visit.durationMinutes) * 100)}%` }}
                             ></div>
                          </div>
@@ -366,22 +354,22 @@ export const VisitorList: React.FC<VisitorListProps> = ({ visits, onCheckout, vi
                          <button 
                            type="button"
                            onClick={() => toggleId(visit.id)}
-                           className="w-full flex items-center justify-between text-sm text-blue-600 hover:text-blue-800 font-medium py-2 px-3 rounded bg-blue-50 hover:bg-blue-100 transition-colors"
+                           className="w-full flex items-center justify-between text-sm text-primary-600 hover:text-primary-700 font-medium py-2 px-3 rounded-lg bg-primary-50 hover:bg-primary-100 transition-colors"
                          >
                            <span className="flex items-center gap-2">
-                             <CreditCard size={14} /> Ver Identificación
+                             <CreditCard size={14} /> Documento ID
                            </span>
                            {showId ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                          </button>
                          
                          {showId && (
-                           <div className="mt-2 p-3 bg-slate-50 rounded-lg border border-slate-100 text-sm animate-fade-in">
+                           <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-100 text-sm animate-fade-in">
                               {visit.idPhotoUrl && (
-                                <div className="mb-2 rounded overflow-hidden border border-slate-200">
+                                <div className="mb-2 rounded-lg overflow-hidden border border-gray-200">
                                    <img src={visit.idPhotoUrl} alt="Identificación" className="w-full h-32 object-cover" />
                                 </div>
                               )}
-                              <p className="text-slate-700 font-mono text-xs leading-relaxed whitespace-pre-line bg-white p-2 rounded border border-gray-100">
+                              <p className="text-gray-600 font-mono text-xs leading-relaxed whitespace-pre-line bg-white p-2 rounded border border-gray-100">
                                 {visit.idOcrText || "Sin datos OCR"}
                               </p>
                            </div>
@@ -394,7 +382,7 @@ export const VisitorList: React.FC<VisitorListProps> = ({ visits, onCheckout, vi
                          <button 
                            type="button"
                            onClick={() => toggleTools(visit.id)}
-                           className="w-full flex items-center justify-between text-sm text-velas-600 hover:text-velas-800 font-medium py-2 px-3 rounded bg-velas-50 hover:bg-velas-100 transition-colors"
+                           className="w-full flex items-center justify-between text-sm text-gray-600 hover:text-dark-900 font-medium py-2 px-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
                          >
                            <span className="flex items-center gap-2">
                              <Hammer size={14} /> Ver Equipo
@@ -403,13 +391,13 @@ export const VisitorList: React.FC<VisitorListProps> = ({ visits, onCheckout, vi
                          </button>
                          
                          {showTools && (
-                           <div className="mt-2 p-3 bg-slate-50 rounded-lg border border-slate-100 text-sm animate-fade-in">
+                           <div className="mt-2 p-3 bg-gray-50 rounded-lg border border-gray-100 text-sm animate-fade-in">
                               {visit.toolsPhotoUrl && (
-                                <div className="mb-2 rounded overflow-hidden">
+                                <div className="mb-2 rounded-lg overflow-hidden">
                                    <img src={visit.toolsPhotoUrl} alt="Herramientas" className="w-full h-32 object-cover" />
                                 </div>
                               )}
-                              <p className="text-slate-700 whitespace-pre-line text-xs leading-relaxed">
+                              <p className="text-gray-600 whitespace-pre-line text-xs leading-relaxed">
                                 {visit.toolsDescription}
                               </p>
                            </div>
@@ -423,10 +411,10 @@ export const VisitorList: React.FC<VisitorListProps> = ({ visits, onCheckout, vi
                   <button
                     type="button"
                     onClick={() => handleCheckoutClick(visit)}
-                    className="w-full bg-gray-50 hover:bg-gray-100 text-gray-600 font-medium py-3 border-t border-gray-100 transition-colors flex justify-center items-center gap-2 text-sm hover:text-red-600 hover:bg-red-50"
+                    className="w-full bg-gray-50 hover:bg-secondary-50 text-gray-500 font-bold py-3 border-t border-gray-100 transition-colors flex justify-center items-center gap-2 text-sm hover:text-secondary-500 group"
                   >
-                    <LogOut size={16} />
-                    Registrar Salida (Check Out)
+                    <LogOut size={16} className="group-hover:stroke-2" />
+                    Registrar Salida
                   </button>
                 )}
               </div>

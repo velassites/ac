@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { User, Lock, Eye, EyeOff, ShieldCheck, Loader2, ArrowRight } from 'lucide-react';
 
@@ -30,43 +29,44 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
   };
 
   return (
-    <div className="min-h-screen bg-velas-800 flex items-center justify-center p-4 bg-[url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center bg-no-repeat relative">
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-velas-900/80 backdrop-blur-sm"></div>
+    <div className="min-h-screen bg-dark-900 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Abstract decorative elements */}
+      <div className="absolute top-0 left-0 w-96 h-96 bg-primary-400/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-secondary-400/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
 
-      <div className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden animate-fade-in">
+      <div className="relative w-full max-w-md bg-white/5 backdrop-blur-md rounded-2xl shadow-2xl border border-white/10 overflow-hidden animate-fade-in">
         {/* Header */}
-        <div className="bg-velas-50 p-8 pb-6 text-center border-b border-velas-100">
-           <div className="flex justify-center mb-4">
-             <div className="w-16 h-16 bg-velas-600 rounded-full flex items-center justify-center shadow-lg text-gold-500">
+        <div className="p-8 pb-6 text-center border-b border-white/5">
+           <div className="flex justify-center mb-6">
+             <div className="w-16 h-16 bg-gradient-to-tr from-primary-600 to-primary-400 rounded-2xl flex items-center justify-center shadow-lg shadow-primary-500/20 text-white">
                 <ShieldCheck size={32} />
              </div>
            </div>
-           <h1 className="font-serif font-bold text-2xl text-velas-800 tracking-tight">VELAS RESORTS</h1>
-           <p className="text-xs text-gray-500 uppercase tracking-widest mt-1">Control de Acceso & Seguridad</p>
+           <h1 className="font-bold text-2xl text-white tracking-tight">VELAS RESORTS</h1>
+           <p className="text-xs text-gray-400 uppercase tracking-widest mt-2 font-medium">Acceso de Seguridad</p>
         </div>
 
         {/* Form */}
         <div className="p-8 pt-6">
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
-              <div className="bg-red-50 text-red-600 text-sm p-3 rounded-lg border border-red-100 flex items-start gap-2">
+              <div className="bg-secondary-500/10 text-secondary-400 text-sm p-3 rounded-lg border border-secondary-500/20 flex items-start gap-2">
                  <span className="mt-0.5">⚠️</span>
                  {error}
               </div>
             )}
 
             <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">Usuario</label>
+              <label className="block text-sm font-medium text-gray-300">Usuario</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
                   <User size={18} />
                 </div>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-velas-500 focus:border-velas-500 transition-colors"
+                  className="block w-full pl-10 pr-3 py-3 bg-dark-800 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all placeholder-gray-600"
                   placeholder="usuario@velasresorts.com"
                   required
                 />
@@ -74,23 +74,23 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
             </div>
 
             <div className="space-y-1">
-              <label className="block text-sm font-medium text-gray-700">Contraseña</label>
+              <label className="block text-sm font-medium text-gray-300">Contraseña</label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500">
                   <Lock size={18} />
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-velas-500 focus:border-velas-500 transition-colors"
+                  className="block w-full pl-10 pr-10 py-3 bg-dark-800 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all placeholder-gray-600"
                   placeholder="••••••••"
                   required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 cursor-pointer"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-300 cursor-pointer transition-colors"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
@@ -100,7 +100,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-velas-600 text-white py-3 rounded-lg font-medium shadow-md hover:bg-velas-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-velas-500 transition-all active:scale-[0.99] flex justify-center items-center gap-2 mt-4"
+              className="w-full bg-primary-400 text-dark-900 py-3 rounded-lg font-bold shadow-lg shadow-primary-400/20 hover:bg-primary-300 hover:shadow-primary-400/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-dark-900 focus:ring-primary-400 transition-all active:scale-[0.98] flex justify-center items-center gap-2 mt-6"
             >
               {isLoading ? (
                 <>
@@ -117,8 +117,8 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
           </form>
         </div>
         
-        <div className="bg-gray-50 p-4 text-center border-t border-gray-100">
-           <p className="text-xs text-gray-400">© 2025 Velas Resorts. Uso exclusivo personal autorizado.</p>
+        <div className="p-4 text-center border-t border-white/5">
+           <p className="text-[10px] text-gray-500">© 2025 Velas Resorts. Uso exclusivo personal autorizado.</p>
         </div>
       </div>
     </div>

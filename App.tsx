@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tab, Visit, VisitStatus } from './types';
 import { RegistrationForm } from './components/RegistrationForm';
@@ -50,12 +49,10 @@ export default function App() {
 
       if (error) {
         console.error("Error fetching visits:", error.message, error.details);
-        alert(`Error al cargar las visitas: ${error.message}. Asegúrese de haber creado la tabla en Supabase.`);
         return;
       }
 
       if (data) {
-        // Map Database (Snake Case) -> App (Camel Case)
         const mappedVisits: Visit[] = data.map((row: any) => ({
           id: row.id,
           visitorName: row.visitor_name,
@@ -89,18 +86,15 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    if (window.confirm('¿Está seguro que desea cerrar sesión?')) {
-      sessionStorage.removeItem(AUTH_KEY);
-      setIsAuthenticated(false);
-      setActiveTab('dashboard');
-    }
+    sessionStorage.removeItem(AUTH_KEY);
+    setIsAuthenticated(false);
+    setActiveTab('dashboard');
   };
 
   const handleRegister = async (data: Omit<Visit, 'id' | 'status' | 'checkInTime'>) => {
     setIsLoading(true);
     const checkInTime = new Date();
     
-    // Map App (Camel Case) -> Database (Snake Case)
     const dbPayload = {
       visitor_name: data.visitorName,
       visitor_company: data.visitorCompany,
@@ -131,7 +125,6 @@ export default function App() {
       }
 
       if (newRow) {
-         // Add to local state to avoid full refetch
          const newVisit: Visit = {
            id: newRow.id,
            visitorName: newRow.visitor_name,
@@ -167,13 +160,9 @@ export default function App() {
       return;
     }
 
-    // Confirmation handled in VisitorList UI now.
-    // Proceed directly with update.
-
     const checkOutTime = new Date();
     
     try {
-      // Use select() to confirm the row was actually returned/updated
       const { data, error } = await supabase
         .from('visits')
         .update({
@@ -185,12 +174,10 @@ export default function App() {
 
       if (error) throw error;
       
-      // If RLS blocks update or ID not found, data might be empty
       if (!data || data.length === 0) {
-          throw new Error("No se pudo actualizar la visita. Es posible que no tenga permisos o que la visita ya no exista.");
+          throw new Error("No se pudo actualizar la visita.");
       }
 
-      // Update local state
       setVisits(prev => prev.map(v => 
         v.id === visit.id 
           ? { ...v, status: VisitStatus.COMPLETED, checkOutTime: checkOutTime.getTime() } 
@@ -208,48 +195,45 @@ export default function App() {
         setActiveTab(tab);
         setIsSidebarOpen(false);
       }}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
         activeTab === tab 
-          ? 'bg-velas-600 text-white shadow-md' 
-          : 'text-slate-600 hover:bg-velas-100'
+          ? 'bg-primary-400 text-dark-900 font-bold shadow-md shadow-primary-500/20' 
+          : 'text-gray-400 hover:bg-white/5 hover:text-white'
       }`}
     >
-      <Icon size={20} />
-      <span className="font-medium">{label}</span>
+      <Icon size={20} className={activeTab === tab ? "text-dark-900" : ""} />
+      <span>{label}</span>
     </button>
   );
 
-  // Format Date: "lunes, 24 de octubre"
   const formattedDate = currentDate.toLocaleDateString('es-MX', {
     weekday: 'long',
     day: 'numeric',
     month: 'long'
   });
   
-  // Format Time: "10:42 AM"
   const formattedTime = currentDate.toLocaleTimeString('es-MX', {
     hour: '2-digit',
     minute: '2-digit',
     hour12: true
   });
 
-  // Header Content
   const getHeaderContent = () => {
     switch (activeTab) {
       case 'register':
         return {
-          title: 'Registro de Entrada',
-          desc: 'Complete el formulario para autorizar el acceso a las instalaciones.'
+          title: 'Nuevo Registro',
+          desc: 'Complete la información para registrar un acceso.'
         };
       case 'history':
         return {
-          title: 'Historial de Visitas',
-          desc: 'Registro completo de visitas finalizadas y salidas.'
+          title: 'Historial',
+          desc: 'Registro completo de visitas finalizadas.'
         };
       default:
         return {
-          title: 'Bitácora de Visitas',
-          desc: 'Monitoreo de visitantes en propiedad en tiempo real.'
+          title: 'Bitácora Activa',
+          desc: 'Monitoreo de visitantes en tiempo real.'
         };
     }
   };
@@ -261,61 +245,62 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex bg-velas-50">
+    <div className="min-h-screen flex bg-gray-100">
       
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 bg-black/50 z-20 lg:hidden"
+          className="fixed inset-0 bg-dark-900/80 backdrop-blur-sm z-20 lg:hidden"
           onClick={() => setIsSidebarOpen(false)}
         />
       )}
 
-      {/* Sidebar */}
-      <aside className={`fixed lg:static inset-y-0 left-0 w-64 bg-white border-r border-gray-200 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-transform duration-200 z-30 flex flex-col shadow-xl lg:shadow-none`}>
-        <div className="p-6 border-b border-gray-100">
-          <div className="flex items-center gap-2 text-velas-800 mb-1">
-            <ShieldCheck size={28} className="text-gold-600" />
-            <span className="font-serif font-bold text-xl tracking-tight">VELAS RESORTS</span>
+      {/* Sidebar - Dark Theme */}
+      <aside className={`fixed lg:static inset-y-0 left-0 w-72 bg-dark-900 border-r border-dark-800 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 transition-transform duration-200 z-30 flex flex-col shadow-2xl lg:shadow-none`}>
+        <div className="p-8 pb-4">
+          <div className="flex items-center gap-3 text-white mb-1">
+            <div className="bg-primary-400 p-1.5 rounded-lg text-dark-900">
+              <ShieldCheck size={20} />
+            </div>
+            <span className="font-bold text-xl tracking-tight">VELAS RESORTS</span>
           </div>
-          <p className="text-xs text-gray-500 uppercase tracking-widest pl-9">Control de Acceso</p>
+          <p className="text-xs text-gray-500 uppercase tracking-widest pl-11">Control de Acceso</p>
 
-          {/* Clock Widget (Desktop) */}
-          <div className="mt-8 pt-6 border-t border-dashed border-velas-200">
-            <div className="flex items-center gap-2 text-velas-600 mb-1">
+          {/* Clock Widget */}
+          <div className="mt-8 p-4 bg-white/5 rounded-2xl border border-white/5">
+            <div className="flex items-center gap-2 text-primary-400 mb-1">
               <Clock size={14} />
-              <span className="text-xs font-medium uppercase tracking-wider text-gray-500 capitalize">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 capitalize">
                 {formattedDate}
               </span>
             </div>
-            <p className="text-3xl font-serif font-bold text-slate-800 tracking-tight mt-1">
+            <p className="text-2xl font-bold text-white tracking-tight mt-1 tabular-nums">
               {formattedTime}
             </p>
-            <p className="text-[10px] text-gray-400 mt-1">Hora Local del Sistema</p>
           </div>
         </div>
 
         <nav className="p-4 space-y-2 flex-1">
-          <NavItem tab="dashboard" label="Bitácora Activa" icon={ClipboardList} />
-          <NavItem tab="register" label="Nuevo Registro" icon={PlusCircle} />
+          <NavItem tab="dashboard" label="Bitácora" icon={ClipboardList} />
+          <NavItem tab="register" label="Registro" icon={PlusCircle} />
           <NavItem tab="history" label="Historial" icon={History} />
         </nav>
 
-        <div className="p-6 border-t border-gray-100 bg-gray-50">
+        <div className="p-6 border-t border-white/5 bg-black/20">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-velas-200 flex items-center justify-center text-velas-700 font-bold shadow-inner">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary-600 to-primary-400 flex items-center justify-center text-white font-bold shadow-lg">
               S
             </div>
             <div className="overflow-hidden">
-              <p className="text-sm font-bold text-gray-700 truncate">Seguridad</p>
-              <p className="text-xs text-gray-500 truncate">Caseta Principal</p>
+              <p className="text-sm font-bold text-white truncate">Seguridad</p>
+              <p className="text-xs text-gray-400 truncate">Caseta Principal</p>
             </div>
           </div>
           <button 
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 text-xs text-red-600 hover:bg-red-50 py-2 rounded-lg transition-colors border border-red-100"
+            className="w-full flex items-center justify-center gap-2 text-xs text-secondary-400 hover:bg-secondary-400/10 py-3 rounded-xl transition-colors border border-secondary-400/20 font-medium"
           >
-            <LogOut size={14} />
+            <LogOut size={16} />
             Cerrar Sesión
           </button>
         </div>
@@ -324,38 +309,33 @@ export default function App() {
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden h-screen">
         {/* Top Bar Mobile */}
-        <div className="lg:hidden bg-white border-b border-gray-200 p-4 flex justify-between items-center shadow-sm z-20 relative">
-          <div>
-             <span className="font-serif font-bold text-velas-800 text-lg block">VELAS RESORTS</span>
+        <div className="lg:hidden bg-dark-900 border-b border-white/5 p-4 flex justify-between items-center shadow-md z-20">
+          <div className="flex items-center gap-2">
+             <div className="bg-primary-400 p-1 rounded-md text-dark-900">
+                <ShieldCheck size={16} />
+             </div>
+             <span className="font-bold text-white">VELAS</span>
           </div>
           
-          <div className="flex items-center gap-4">
-            {/* Clock Widget (Mobile) */}
-            <div className="hidden sm:block text-right">
-                <p className="text-[10px] text-gray-500 uppercase font-medium">{formattedDate}</p>
-                <p className="text-sm font-bold text-velas-800 font-serif">{formattedTime}</p>
-            </div>
-
-            <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-              <Menu size={24} />
-            </button>
-          </div>
+          <button onClick={() => setIsSidebarOpen(true)} className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
+            <Menu size={24} />
+          </button>
         </div>
 
         {/* Scrollable Content Area */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-8">
+        <div className="flex-1 overflow-y-auto p-4 md:p-8 bg-gray-50">
           <div className="max-w-6xl mx-auto">
             <header className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
               <div>
-                <h1 className="text-3xl font-serif font-bold text-gray-900">
+                <h1 className="text-3xl font-bold text-dark-900 tracking-tight">
                   {headerInfo.title}
                 </h1>
-                <p className="text-gray-500 mt-1">
+                <p className="text-gray-500 mt-2 font-medium">
                   {headerInfo.desc}
                 </p>
               </div>
               {isLoading && (
-                <div className="flex items-center gap-2 text-velas-600 bg-white px-3 py-1 rounded-full shadow-sm text-sm border border-gray-100 animate-pulse">
+                <div className="flex items-center gap-2 text-primary-600 bg-primary-50 px-4 py-2 rounded-full text-sm font-medium border border-primary-100 animate-pulse">
                   <Loader2 size={16} className="animate-spin" />
                   Sincronizando...
                 </div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { GoogleGenAI, Type } from "@google/genai";
 import { Visit, IdDocumentType } from '../types';
@@ -16,13 +15,11 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
     visitorCompany: '',
     hostName: '',
     badgeId: '',
-    durationMinutes: 60, // Default 1 hour
+    durationMinutes: 60,
     photoUrl: '',
-    // ID Data
     idDocumentType: 'INE' as IdDocumentType,
     idPhotoUrl: '',
     idOcrText: '',
-    // Tools Data
     hasTools: false,
     toolsDescription: '',
     toolsPhotoUrl: ''
@@ -70,7 +67,6 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
       });
     }
 
-    // OCR Processing
     const base64Data = photoUrl.split(',')[1];
     if (!base64Data) return;
 
@@ -81,15 +77,8 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
         model: 'gemini-2.5-flash',
         contents: {
           parts: [
-            {
-              inlineData: {
-                mimeType: 'image/jpeg',
-                data: base64Data
-              }
-            },
-            {
-              text: "Analiza la imagen de este documento de identificación. Extrae el nombre completo de la persona y todo el texto legible del documento."
-            }
+            { inlineData: { mimeType: 'image/jpeg', data: base64Data } },
+            { text: "Analiza la imagen de este documento de identificación. Extrae el nombre completo de la persona y todo el texto legible del documento." }
           ]
         },
         config: {
@@ -97,14 +86,8 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
           responseSchema: {
             type: Type.OBJECT,
             properties: {
-              name: {
-                type: Type.STRING,
-                description: "El nombre completo de la persona identificada en el documento. Prioriza el nombre principal."
-              },
-              full_text: {
-                type: Type.STRING,
-                description: "Todo el texto legible extraído del documento mediante OCR, formateado como lista o párrafos."
-              }
+              name: { type: Type.STRING, description: "Nombre completo" },
+              full_text: { type: Type.STRING, description: "Texto OCR completo" }
             }
           }
         }
@@ -118,10 +101,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
 
         setFormData(prev => {
           const updates = { ...prev, idOcrText: ocrContent };
-          
-          // Auto-fill visitor name if currently empty and a name was detected
           if (!prev.visitorName && detectedName) {
-            // Simple title case conversion for better presentation
             const formattedName = detectedName
               .toLowerCase()
               .split(' ')
@@ -129,7 +109,6 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
               .join(' ');
             updates.visitorName = formattedName;
           }
-          
           return updates;
         });
       }
@@ -142,7 +121,6 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
 
   const handleToolsPhotoCapture = async (photoUrl: string) => {
     setFormData(prev => ({ ...prev, toolsPhotoUrl: photoUrl }));
-    
     const base64Data = photoUrl.split(',')[1];
     if (!base64Data) return;
 
@@ -153,21 +131,12 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
         model: 'gemini-2.5-flash',
         contents: {
           parts: [
-            {
-              inlineData: {
-                mimeType: 'image/jpeg',
-                data: base64Data
-              }
-            },
-            {
-              text: "Genera un inventario detallado de las herramientas, equipos o materiales visibles en esta imagen para un registro de seguridad de control de acceso. Sé conciso, directo y usa formato de lista si hay varios objetos."
-            }
+            { inlineData: { mimeType: 'image/jpeg', data: base64Data } },
+            { text: "Genera un inventario detallado de las herramientas visibles." }
           ]
         }
       });
-
-      const description = response.text || "";
-      setFormData(prev => ({ ...prev, toolsDescription: description }));
+      setFormData(prev => ({ ...prev, toolsDescription: response.text || "" }));
     } catch (error) {
       console.error("Error analyzing tools:", error);
     } finally {
@@ -178,19 +147,15 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
   const validate = () => {
     const newErrors: Record<string, string> = {};
     if (!formData.visitorName.trim()) newErrors.visitorName = "El nombre es requerido";
-    if (!formData.visitorCompany.trim()) newErrors.visitorCompany = "La empresa/origen es requerida";
+    if (!formData.visitorCompany.trim()) newErrors.visitorCompany = "La empresa es requerida";
     if (!formData.hostName.trim()) newErrors.hostName = "El anfitrión es requerido";
-    if (!formData.badgeId.trim()) newErrors.badgeId = "El número de gafete es requerido";
-    if (!formData.photoUrl) newErrors.photoUrl = "La fotografía del visitante es obligatoria";
-    
-    // ID Validation
-    if (!formData.idPhotoUrl) newErrors.idPhotoUrl = "La foto de la identificación es obligatoria";
-
+    if (!formData.badgeId.trim()) newErrors.badgeId = "El gafete es requerido";
+    if (!formData.photoUrl) newErrors.photoUrl = "La foto es obligatoria";
+    if (!formData.idPhotoUrl) newErrors.idPhotoUrl = "La identificación es obligatoria";
     if (formData.hasTools) {
-      if (!formData.toolsPhotoUrl) newErrors.toolsPhotoUrl = "La foto de la herramienta es requerida";
-      if (!formData.toolsDescription.trim()) newErrors.toolsDescription = "La descripción de la herramienta es requerida";
+      if (!formData.toolsPhotoUrl) newErrors.toolsPhotoUrl = "La foto de herramienta es requerida";
+      if (!formData.toolsDescription.trim()) newErrors.toolsDescription = "La descripción es requerida";
     }
-    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -205,11 +170,9 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
         badgeId: formData.badgeId,
         photoUrl: formData.photoUrl,
         durationMinutes: Number(formData.durationMinutes),
-        
         idDocumentType: formData.idDocumentType,
         idPhotoUrl: formData.idPhotoUrl,
         idOcrText: formData.idOcrText,
-
         hasTools: formData.hasTools,
         toolsDescription: formData.hasTools ? formData.toolsDescription : undefined,
         toolsPhotoUrl: formData.hasTools ? formData.toolsPhotoUrl : undefined,
@@ -218,17 +181,18 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 animate-fade-in pb-12">
+    <form onSubmit={handleSubmit} className="space-y-6 animate-fade-in pb-12">
       
       {/* SECTION 1: Basic Info */}
-      <div className="bg-white p-8 rounded-xl shadow-sm border border-velas-100">
-        <h3 className="text-xl font-serif font-bold text-velas-800 mb-6 flex items-center gap-2 border-b border-velas-100 pb-4">
-          <UserCheck className="text-gold-600" />
+      <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+        <h3 className="text-xl font-bold text-dark-900 mb-6 flex items-center gap-2 border-b border-gray-100 pb-4">
+          <div className="p-1.5 bg-primary-50 rounded-lg text-primary-500">
+             <UserCheck size={20} />
+          </div>
           Información del Visitante
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Visitor Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
             <div className="relative">
@@ -240,14 +204,13 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
                 name="visitorName"
                 value={formData.visitorName}
                 onChange={handleInputChange}
-                className={`block w-full pl-10 pr-3 py-2.5 border ${errors.visitorName ? 'border-red-300 bg-red-50' : 'border-gray-300'} rounded-lg focus:ring-velas-500 focus:border-velas-500 transition-colors`}
+                className={`block w-full pl-10 pr-3 py-2.5 border ${errors.visitorName ? 'border-secondary-300 bg-secondary-50' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all`}
                 placeholder="Ej. Juan Pérez"
               />
             </div>
-            {errors.visitorName && <p className="mt-1 text-xs text-red-600">{errors.visitorName}</p>}
+            {errors.visitorName && <p className="mt-1 text-xs text-secondary-500">{errors.visitorName}</p>}
           </div>
 
-          {/* Company */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Empresa / Procedencia</label>
             <div className="relative">
@@ -259,16 +222,15 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
                 name="visitorCompany"
                 value={formData.visitorCompany}
                 onChange={handleInputChange}
-                className={`block w-full pl-10 pr-3 py-2.5 border ${errors.visitorCompany ? 'border-red-300 bg-red-50' : 'border-gray-300'} rounded-lg focus:ring-velas-500 focus:border-velas-500 transition-colors`}
+                className={`block w-full pl-10 pr-3 py-2.5 border ${errors.visitorCompany ? 'border-secondary-300 bg-secondary-50' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all`}
                 placeholder="Ej. Proveedores S.A."
               />
             </div>
-            {errors.visitorCompany && <p className="mt-1 text-xs text-red-600">{errors.visitorCompany}</p>}
+            {errors.visitorCompany && <p className="mt-1 text-xs text-secondary-500">{errors.visitorCompany}</p>}
           </div>
 
-          {/* Host */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Anfitrión (Personal de Velas)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Anfitrión (Staff Velas)</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <UserCheck size={18} className="text-gray-400" />
@@ -278,14 +240,13 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
                 name="hostName"
                 value={formData.hostName}
                 onChange={handleInputChange}
-                className={`block w-full pl-10 pr-3 py-2.5 border ${errors.hostName ? 'border-red-300 bg-red-50' : 'border-gray-300'} rounded-lg focus:ring-velas-500 focus:border-velas-500 transition-colors`}
+                className={`block w-full pl-10 pr-3 py-2.5 border ${errors.hostName ? 'border-secondary-300 bg-secondary-50' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all`}
                 placeholder="Ej. Gerente de Mantenimiento"
               />
             </div>
-            {errors.hostName && <p className="mt-1 text-xs text-red-600">{errors.hostName}</p>}
+            {errors.hostName && <p className="mt-1 text-xs text-secondary-500">{errors.hostName}</p>}
           </div>
 
-          {/* Badge ID */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Gafete Asignado</label>
             <div className="relative">
@@ -297,16 +258,15 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
                 name="badgeId"
                 value={formData.badgeId}
                 onChange={handleInputChange}
-                className={`block w-full pl-10 pr-3 py-2.5 border ${errors.badgeId ? 'border-red-300 bg-red-50' : 'border-gray-300'} rounded-lg focus:ring-velas-500 focus:border-velas-500 transition-colors`}
+                className={`block w-full pl-10 pr-3 py-2.5 border ${errors.badgeId ? 'border-secondary-300 bg-secondary-50' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all`}
                 placeholder="No. de Gafete"
               />
             </div>
-            {errors.badgeId && <p className="mt-1 text-xs text-red-600">{errors.badgeId}</p>}
+            {errors.badgeId && <p className="mt-1 text-xs text-secondary-500">{errors.badgeId}</p>}
           </div>
 
-          {/* Duration */}
           <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tiempo Estimado en Propiedad</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tiempo Estimado</label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Clock size={18} className="text-gray-400" />
@@ -315,7 +275,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
                 name="durationMinutes"
                 value={formData.durationMinutes}
                 onChange={handleInputChange}
-                className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-velas-500 focus:border-velas-500 transition-colors bg-white"
+                className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all bg-white"
               >
                 <option value={30}>30 Minutos</option>
                 <option value={60}>1 Hora</option>
@@ -324,15 +284,16 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
                 <option value={480}>8 Horas (Jornada Completa)</option>
               </select>
             </div>
-            <p className="mt-2 text-xs text-gray-500">Se generará una alerta si el visitante excede este tiempo sin hacer Check-out.</p>
           </div>
         </div>
       </div>
 
       {/* SECTION 2: ID Document */}
-      <div className="bg-white p-8 rounded-xl shadow-sm border border-velas-100">
-        <h3 className="text-xl font-serif font-bold text-velas-800 mb-6 flex items-center gap-2 border-b border-velas-100 pb-4">
-          <CreditCard className="text-gold-600" />
+      <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+        <h3 className="text-xl font-bold text-dark-900 mb-6 flex items-center gap-2 border-b border-gray-100 pb-4">
+          <div className="p-1.5 bg-primary-50 rounded-lg text-primary-500">
+             <CreditCard size={20} />
+          </div>
           Identificación Oficial
         </h3>
         
@@ -344,7 +305,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
                 name="idDocumentType"
                 value={formData.idDocumentType}
                 onChange={handleInputChange}
-                className="block w-full p-2.5 border border-gray-300 rounded-lg focus:ring-velas-500 focus:border-velas-500 bg-white"
+                className="block w-full p-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent bg-white"
               >
                 <option value="INE">INE / IFE</option>
                 <option value="PASSPORT">Pasaporte</option>
@@ -356,7 +317,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Fotografía del Documento</label>
               <CameraCapture onCapture={handleIdPhotoCapture} />
-              {errors.idPhotoUrl && <p className="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded">{errors.idPhotoUrl}</p>}
+              {errors.idPhotoUrl && <p className="mt-2 text-xs text-secondary-500 bg-secondary-50 p-2 rounded">{errors.idPhotoUrl}</p>}
             </div>
           </div>
 
@@ -364,7 +325,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
             <div className="flex justify-between items-center">
               <label className="block text-sm font-medium text-gray-700">Datos Extraídos (OCR)</label>
               {isAnalyzingId && (
-                <span className="text-xs text-gold-600 flex items-center gap-1 animate-pulse">
+                <span className="text-xs text-primary-600 flex items-center gap-1 animate-pulse font-medium">
                   <ScanText size={12} />
                   Leyendo documento...
                 </span>
@@ -376,28 +337,26 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
                  name="idOcrText"
                  value={formData.idOcrText}
                  onChange={handleInputChange}
-                 className="block w-full h-full p-3 border border-gray-300 rounded-lg focus:ring-velas-500 focus:border-velas-500 text-sm font-mono bg-gray-50"
+                 className="block w-full h-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent text-sm font-mono bg-gray-50 transition-all"
                  placeholder="Capture la foto para extraer los datos automáticamente..."
-                 readOnly={false}
                />
                {isAnalyzingId && (
                   <div className="absolute inset-0 bg-white/50 flex items-center justify-center rounded-lg backdrop-blur-sm">
-                    <Loader2 className="animate-spin text-velas-600" size={32} />
+                    <Loader2 className="animate-spin text-primary-600" size={32} />
                   </div>
                 )}
             </div>
-            <p className="text-xs text-gray-500">
-              Verifique que los datos extraídos sean legibles.
-            </p>
           </div>
         </div>
       </div>
 
       {/* SECTION 3: Tools Registration */}
-      <div className="bg-white p-8 rounded-xl shadow-sm border border-velas-100">
-         <div className="flex items-center justify-between mb-6 border-b border-velas-100 pb-4">
-            <h3 className="text-xl font-serif font-bold text-velas-800 flex items-center gap-2">
-              <Hammer className="text-gold-600" />
+      <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+         <div className="flex items-center justify-between mb-6 border-b border-gray-100 pb-4">
+            <h3 className="text-xl font-bold text-dark-900 flex items-center gap-2">
+              <div className="p-1.5 bg-primary-50 rounded-lg text-primary-500">
+                 <Hammer size={20} />
+              </div>
               Registro de Herramientas
             </h3>
             <label className="flex items-center gap-3 cursor-pointer">
@@ -410,7 +369,7 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
                   onChange={handleCheckboxChange}
                   className="sr-only peer" 
                 />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-velas-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-velas-600"></div>
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
               </div>
             </label>
          </div>
@@ -420,16 +379,16 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
                <div className="space-y-4">
                   <p className="text-sm text-gray-600 mb-2">1. Tome una fotografía clara de las herramientas.</p>
                   <CameraCapture onCapture={handleToolsPhotoCapture} />
-                  {errors.toolsPhotoUrl && <p className="text-xs text-red-600 bg-red-50 p-2 rounded">{errors.toolsPhotoUrl}</p>}
+                  {errors.toolsPhotoUrl && <p className="text-xs text-secondary-500 bg-secondary-50 p-2 rounded">{errors.toolsPhotoUrl}</p>}
                </div>
                
                <div className="space-y-4">
                   <div className="flex justify-between items-center">
                      <label className="block text-sm font-medium text-gray-700">Inventario / Descripción</label>
                      {isAnalyzingTools && (
-                       <span className="text-xs text-gold-600 flex items-center gap-1 animate-pulse">
+                       <span className="text-xs text-primary-600 flex items-center gap-1 animate-pulse font-medium">
                          <Sparkles size={12} />
-                         Analizando imagen con IA...
+                         Analizando con IA...
                        </span>
                      )}
                   </div>
@@ -440,34 +399,33 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
                       value={formData.toolsDescription}
                       onChange={handleInputChange}
                       rows={8}
-                      className={`block w-full p-3 border ${errors.toolsDescription ? 'border-red-300' : 'border-gray-300'} rounded-lg focus:ring-velas-500 focus:border-velas-500 transition-colors text-sm leading-relaxed`}
-                      placeholder="Tome una foto para generar la descripción automáticamente, o escriba aquí..."
+                      className={`block w-full p-3 border ${errors.toolsDescription ? 'border-secondary-300' : 'border-gray-200'} rounded-lg focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-all text-sm leading-relaxed`}
+                      placeholder="Tome una foto para generar la descripción..."
                       disabled={isAnalyzingTools}
                     />
                     {isAnalyzingTools && (
                       <div className="absolute inset-0 bg-white/50 flex items-center justify-center rounded-lg backdrop-blur-sm">
-                        <Loader2 className="animate-spin text-velas-600" size={32} />
+                        <Loader2 className="animate-spin text-primary-600" size={32} />
                       </div>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500">
-                    Puede editar manualmente el inventario generado por la IA si es necesario.
-                  </p>
-                  {errors.toolsDescription && <p className="text-xs text-red-600">{errors.toolsDescription}</p>}
+                  {errors.toolsDescription && <p className="text-xs text-secondary-500">{errors.toolsDescription}</p>}
                </div>
             </div>
          )}
       </div>
 
       {/* SECTION 4: Visitor Photo */}
-      <div className="bg-white p-8 rounded-xl shadow-sm border border-velas-100">
-        <h3 className="text-xl font-serif font-bold text-velas-800 mb-6 flex items-center gap-2 border-b border-velas-100 pb-4">
-          <CameraCapture onCapture={() => {}} /> {/* Dummy call to import Icon properly in header */}
+      <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100">
+        <h3 className="text-xl font-bold text-dark-900 mb-6 flex items-center gap-2 border-b border-gray-100 pb-4">
+           <div className="p-1.5 bg-primary-50 rounded-lg text-primary-500">
+             <User size={20} />
+           </div>
           Fotografía del Visitante
         </h3>
         <div className="max-w-lg mx-auto">
            <CameraCapture onCapture={handlePhotoCapture} />
-           {errors.photoUrl && <p className="mt-2 text-center text-sm text-red-600 bg-red-50 py-1 rounded">{errors.photoUrl}</p>}
+           {errors.photoUrl && <p className="mt-2 text-center text-sm text-secondary-500 bg-secondary-50 py-1 rounded">{errors.photoUrl}</p>}
         </div>
       </div>
 
@@ -476,13 +434,13 @@ export const RegistrationForm: React.FC<RegistrationFormProps> = ({ onSubmit, on
         <button
           type="button"
           onClick={onCancel}
-          className="px-6 py-3 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium transition-colors"
+          className="px-6 py-3 text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-bold transition-colors"
         >
           Cancelar
         </button>
         <button
           type="submit"
-          className="px-8 py-3 bg-velas-600 text-white rounded-lg hover:bg-velas-700 font-medium shadow-md flex items-center gap-2 transition-transform active:scale-95"
+          className="px-8 py-3 bg-primary-400 text-dark-900 rounded-lg hover:bg-primary-300 font-bold shadow-lg shadow-primary-400/20 flex items-center gap-2 transition-transform active:scale-95"
         >
           <Save size={20} />
           Registrar Entrada
